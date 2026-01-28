@@ -2,11 +2,17 @@
 # Authors: Vitalii Babenko
 # Contacts: vbabenko2191@gmail.com
 
-import pydicom
+import argparse
+from pathlib import Path
+import sys
+from math import radians, cos, sin
+
 import numpy as np
+import pydicom
 from OpenGL.GL import *
 from OpenGL.GLUT import *
-from math import radians, cos, sin
+
+DEFAULT_IMAGE_DIR = Path(__file__).resolve().parents[1] / "Images" / "ImagesForLab7"
 
 
 def zagruzka_texturi():
@@ -153,31 +159,56 @@ def glavnaya_funkci9():
     glutMainLoop()
 
 
-n = 20
-shirina, visota = 256, 256
-image_pixels = np.zeros((n, visota, shirina))
-front_pixels = np.zeros((visota, n + 12, shirina))
-sag_pixels = np.zeros((shirina, n + 12, visota))
-for i in range(n):
-    if i < (n // 2) - 1:
-        nazvani3 = "D:\\PycharmProjects\\Biomedical-Image-Processing-Labs\\Images\\ImagesForLab7\\brain_00" + str(i + 1) + ".dcm"
-    else:
-        nazvani3 = "D:\\PycharmProjects\\Biomedical-Image-Processing-Labs\\Images\\ImagesForLab7\\brain_0" + str(i + 1) + ".dcm"
-    dcm = pydicom.read_file(nazvani3)
-    slice_thickness = dcm['0018', '0050'].value
-    space_between_slices = dcm['0018', '0088'].value
-    image_pixels[i] = normalizaci9(dcm.pixel_array)
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Lab 7 volume renderer.")
+    parser.add_argument(
+        "--image-dir",
+        type=Path,
+        default=DEFAULT_IMAGE_DIR,
+        help="Directory containing brain_###.dcm images.",
+    )
+    parser.add_argument(
+        "--slices",
+        type=int,
+        default=20,
+        help="Number of slices to load.",
+    )
+    return parser.parse_args()
 
-for i in range(visota):
-    for j in range(n):
-        for k in range(shirina):
-            front_pixels[i][j][k] = image_pixels[j][i][k]
 
-for i in range(shirina):
-    for j in range(n):
-        for k in range(visota):
-            sag_pixels[i][j][k] = image_pixels[j][k][i]
+def main():
+    global n, shirina, visota
+    global image_pixels, front_pixels, sag_pixels
+    global slice_thickness, space_between_slices
+    global t1, t2, t3
 
-global t1, t2, t3
-t1, t2, t3 = 0, 0, 0
-glavnaya_funkci9()
+    args = parse_args()
+    n = args.slices
+    shirina, visota = 256, 256
+    image_pixels = np.zeros((n, visota, shirina))
+    front_pixels = np.zeros((visota, n + 12, shirina))
+    sag_pixels = np.zeros((shirina, n + 12, visota))
+
+    for i in range(n):
+        filename = args.image_dir / f"brain_{i + 1:03d}.dcm"
+        dcm = pydicom.read_file(str(filename))
+        slice_thickness = dcm['0018', '0050'].value
+        space_between_slices = dcm['0018', '0088'].value
+        image_pixels[i] = normalizaci9(dcm.pixel_array)
+
+    for i in range(visota):
+        for j in range(n):
+            for k in range(shirina):
+                front_pixels[i][j][k] = image_pixels[j][i][k]
+
+    for i in range(shirina):
+        for j in range(n):
+            for k in range(visota):
+                sag_pixels[i][j][k] = image_pixels[j][k][i]
+
+    t1, t2, t3 = 0, 0, 0
+    glavnaya_funkci9()
+
+
+if __name__ == "__main__":
+    main()
