@@ -2,10 +2,17 @@
 # Authors: Vitalii Babenko
 # Contacts: vbabenko2191@gmail.com
 
+import argparse
+from pathlib import Path
+import sys
+
 import pydicom
 from OpenGL.GLUT import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+
+DEFAULT_CT_IMAGE_PATH = Path(__file__).resolve().parents[1] / "Images" / "ImagesForLab8" / "2-ct.dcm"
+DEFAULT_MRI_IMAGE_PATH = Path(__file__).resolve().parents[1] / "Images" / "ImagesForLab8" / "2-mri.dcm"
 
 
 def get_image1():
@@ -139,17 +146,39 @@ def keyboard(key, x, y):
     display()
 
 
-global pixels
-pixels = []
-glutInit(sys.argv)
-glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB)
-load_image('D:\\PycharmProjects\\Biomedical-Image-Processing-Labs\\Images\\ImagesForLab8\\2-ct.dcm',
-           'D:\\PycharmProjects\\Biomedical-Image-Processing-Labs\\Images\\ImagesForLab8\\2-mri.dcm')
-glutInitWindowSize(get_width(image2), get_height(image2))
-glutInitWindowPosition(255, 255)
-glutCreateWindow('Babenko_lab8')
-init()
-glutDisplayFunc(display)
-glutReshapeFunc(reshape)
-glutKeyboardFunc(keyboard)
-glutMainLoop()
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Lab 8 multi-modal image viewer.")
+    parser.add_argument(
+        "--ct-image",
+        type=Path,
+        default=DEFAULT_CT_IMAGE_PATH,
+        help="Path to the CT DICOM image.",
+    )
+    parser.add_argument(
+        "--mri-image",
+        type=Path,
+        default=DEFAULT_MRI_IMAGE_PATH,
+        help="Path to the MRI DICOM image.",
+    )
+    return parser.parse_args()
+
+
+def main():
+    global pixels
+    args = parse_args()
+    pixels = []
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB)
+    load_image(str(args.ct_image), str(args.mri_image))
+    glutInitWindowSize(get_width(image2), get_height(image2))
+    glutInitWindowPosition(255, 255)
+    glutCreateWindow('Babenko_lab8')
+    init()
+    glutDisplayFunc(display)
+    glutReshapeFunc(reshape)
+    glutKeyboardFunc(keyboard)
+    glutMainLoop()
+
+
+if __name__ == "__main__":
+    main()

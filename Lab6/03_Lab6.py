@@ -2,13 +2,24 @@
 # Authors: Vitalii Babenko
 # Contacts: vbabenko2191@gmail.com
 
-import pydicom
+import argparse
+from pathlib import Path
+import sys
+from math import radians, cos, sin
+
 import numpy as np
+import pydicom
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.arrays.numpymodule import ARRAY_TO_GL_TYPE_MAPPING
-from math import radians, cos, sin
+
+DEFAULT_IMAGE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "Images"
+    / "ImageForLab2-6"
+    / "DICOM_Image_16b.dcm"
+)
 
 
 def zagruzka_texturi(pixeli, tip):
@@ -110,19 +121,39 @@ def glavnaya_funkci9(filename):
     glutMainLoop()
 
 
-dict = {}
-dict['xvec'] = float(input("Vvedite vektor x dl9 pervoy transormacii: "))
-dict['yvec'] = float(input("Vvedite vektor y dl9 pervoy transormacii: "))
-dict['x'] = int(input("Vvedite vektor x dl9 vtoroy transormacii: "))
-dict['y'] = int(input("Vvedite vektor y dl9 pervoy transormacii: "))
-dict['alpha'] = float(input("Vvedite ugol x dl9 vtoroy transormacii: "))
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Lab 6 transformations.")
+    parser.add_argument(
+        "--image",
+        type=Path,
+        default=DEFAULT_IMAGE_PATH,
+        help="Path to the DICOM image.",
+    )
+    return parser.parse_args()
 
-pervaya_matrica = np.array([[1, 0, dict['xvec'], 0], [0, 1, dict['yvec'], 0], [0, 0, 1, 0], [0, 0, 0, 1]],
-                           dtype=float).transpose()
 
-vtoraya_matrica = np.array([[cos(radians(dict['alpha'])), sin(radians(dict['alpha'])), 0, 0],
-                            [-sin(radians(dict['alpha'])), cos(radians(dict['alpha'])), 0, 0],
-                            [0, 0, 1, 0],
-                            [0, 0, 0, 1]], dtype=float).transpose()
+if __name__ == "__main__":
+    args = parse_args()
+    dict = {}
+    dict['xvec'] = float(input("Vvedite vektor x dl9 pervoy transormacii: "))
+    dict['yvec'] = float(input("Vvedite vektor y dl9 pervoy transormacii: "))
+    dict['x'] = int(input("Vvedite vektor x dl9 vtoroy transormacii: "))
+    dict['y'] = int(input("Vvedite vektor y dl9 pervoy transormacii: "))
+    dict['alpha'] = float(input("Vvedite ugol x dl9 vtoroy transormacii: "))
 
-glavnaya_funkci9('D:\PycharmProjects\Biomedical-Image-Processing-Labs\Images\ImageForLab2-6\DICOM_Image_16b.dcm')
+    pervaya_matrica = np.array(
+        [[1, 0, dict['xvec'], 0], [0, 1, dict['yvec'], 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+        dtype=float,
+    ).transpose()
+
+    vtoraya_matrica = np.array(
+        [
+            [cos(radians(dict['alpha'])), sin(radians(dict['alpha'])), 0, 0],
+            [-sin(radians(dict['alpha'])), cos(radians(dict['alpha'])), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+        ],
+        dtype=float,
+    ).transpose()
+
+    glavnaya_funkci9(str(args.image))

@@ -2,12 +2,23 @@
 # Authors: Vitalii Babenko
 # Contacts: vbabenko2191@gmail.com
 
-import pydicom
+import argparse
+from pathlib import Path
+import sys
+
 import numpy as np
+import pydicom
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.arrays.numpymodule import ARRAY_TO_GL_TYPE_MAPPING
+
+DEFAULT_IMAGE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "Images"
+    / "ImageForLab2-6"
+    / "DICOM_Image_16b.dcm"
+)
 
 
 def display():
@@ -135,4 +146,17 @@ def main(filename):
     glutMainLoop()
 
 
-main('D:\PycharmProjects\Biomedical-Image-Processing-Labs\Images\ImageForLab2-6\DICOM_Image_16b.dcm')
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Lab 4 Niblack thresholding.")
+    parser.add_argument(
+        "--image",
+        type=Path,
+        default=DEFAULT_IMAGE_PATH,
+        help="Path to the DICOM image.",
+    )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(str(args.image))
