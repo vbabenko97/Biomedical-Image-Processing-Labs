@@ -2,12 +2,23 @@
 # Authors: Vitalii Babenko
 # Contacts: vbabenko2191@gmail.com
 
-import pydicom
+import argparse
+from pathlib import Path
+import sys
+
 import numpy as np
+import pydicom
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from OpenGL.arrays.numpymodule import ARRAY_TO_GL_TYPE_MAPPING
+
+DEFAULT_IMAGE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "Images"
+    / "ImageForLab2-6"
+    / "DICOM_Image_16b.dcm"
+)
 
 
 def zagruzka_texturi(pixeli, tip):
@@ -195,4 +206,19 @@ maska_gausa = [[0.059, 0.097, 0.059], [0.097, 0.159, 0.097], [0.059, 0.097, 10.0
 # maska_laplaca = [[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]]
 # maska_laplaca = [[0, 1, 0], [1, -4, 1], [0, 1, 0]]
 maska_laplaca = [[1, 1, 1], [1, -8, 1], [1, 1, 1]]
-glavnaya_funkci9('D:\PycharmProjects\Biomedical-Image-Processing-Labs\Images\ImageForLab2-6\DICOM_Image_16b.dcm')
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run Lab 5 filters on a DICOM image.")
+    parser.add_argument(
+        "--image",
+        type=Path,
+        default=DEFAULT_IMAGE_PATH,
+        help="Path to the DICOM image.",
+    )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    glavnaya_funkci9(str(args.image))
